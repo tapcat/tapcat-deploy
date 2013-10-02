@@ -4,7 +4,7 @@ set -e
 
 #build container
 cp ../../war/tapcat-webserver.jar .
-CONTAINER_ID=$(docker build -q -t tapcat/tapcat-webserver . | grep "Success" | awk '{ print $3 }')
+CONTAINER_ID=$(docker build -t tapcat/tapcat-webserver . | grep "Success" | awk '{ print $3 }')
 rm tapcat-webserver.jar
 
 # There are two nodes behind the nginx
@@ -36,7 +36,9 @@ TEST_NODE=$(docker run -d -p 8081:8080 $VOLUME $CONTAINER_ID)
 
 #update current main node
 #during update, server will be redirected to backup node
+echo 'Prod container is about to be replaced'
 if [ -n "$PROD_NODE" ]; then docker stop $PROD_NODE; fi;
 PROD_NODE=$(docker run -d -p 8080:8080 -volumes-from=$TEST_NODE $CONTAINER_ID)
+echo 'Prod container replaced: '$PROD_NODE
 docker ps
 echo 'Docker nodes: TEST: '$TEST_NODE' PROD: '$PROD_NODE' Container ID: '$CONTAINER_ID
